@@ -21523,9 +21523,17 @@
 
 	var _TodoList2 = _interopRequireDefault(_TodoList);
 
-	var _TodoDomain = __webpack_require__(182);
+	var _messagePane = __webpack_require__(182);
+
+	var _messagePane2 = _interopRequireDefault(_messagePane);
+
+	var _TodoDomain = __webpack_require__(183);
 
 	var _TodoDomain2 = _interopRequireDefault(_TodoDomain);
+
+	var _makeRiver = __webpack_require__(185);
+
+	var _makeRiver2 = _interopRequireDefault(_makeRiver);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -21545,26 +21553,23 @@
 
 	        var _this = _possibleConstructorReturn(this, (TodoApp.__proto__ || Object.getPrototypeOf(TodoApp)).call(this));
 
+	        _this.update = function () {
+	            _this.setState({ todos: domain.getAllTodos() });
+	        };
+
 	        _this.addTodo = function () {
-	            if (_this._todoInputField.value) {
-	                domain.addTodo(_this._todoInputField.value);
-	                _this.setState({ todos: domain.getAllTodos() });
+	            var text = _this._todoInputField.value;
+	            if (text) {
+	                domain.addTodo(text);
+	                _this.update();
 	                _this._todoInputField.value = '';
+	                _this.river.messageAppend.push("Add Todo " + text);
 	            }
-	        };
-
-	        _this.archiveToggleTodo = function (e) {
-	            domain.archiveToggleTodo(e.target.dataset.id);
-	            _this.setState({ todos: domain.getAllTodos() });
-	        };
-
-	        _this.removeTodo = function (e) {
-	            domain.removeTodo(e.target.dataset.id);
-	            _this.setState({ todos: domain.getAllTodos() });
 	        };
 
 	        _this.changeVisibilityFilter = function (e) {
 	            _this.setState({ visibilityFilter: e.target.dataset.id });
+	            _this.river.messageAppend.push("Change Filter");
 	        };
 
 	        _this.visibleTodos = function () {
@@ -21584,11 +21589,13 @@
 	            }
 	        };
 
+	        _this.river = (0, _makeRiver2.default)();
 	        _this.visibilityFilters = ["ALL_TODOS", "LEFT_TODOS", "COMPLETED_TODOS"];
 	        _this.state = {
 	            todos: domain.getAllTodos(),
 	            visibilityFilter: "ALL_TODOS"
 	        };
+	        domain.todoApp = _this;
 	        return _this;
 	    }
 
@@ -21620,9 +21627,7 @@
 	                ),
 	                _react2.default.createElement(_TodoList2.default, {
 	                    visibleTodos: visibleTodos,
-	                    visibilityFilter: this.state.visibilityFilter,
-	                    archiveToggleTodo: this.archiveToggleTodo,
-	                    removeTodo: this.removeTodo
+	                    visibilityFilter: this.state.visibilityFilter
 	                }),
 	                _react2.default.createElement(
 	                    'div',
@@ -21638,6 +21643,12 @@
 	                            each.replace("_", " ")
 	                        );
 	                    })
+	                ),
+	                _react2.default.createElement(
+	                    'div',
+	                    { className: 'MessagePane' },
+	                    _react2.default.createElement(_messagePane2.default, { inStream: this.river.messageWrite, inAppendStream: this.river.messageAppend,
+	                        outStream: this.river.messageRead })
 	                )
 	            );
 	        }
@@ -21789,6 +21800,117 @@
 /* 182 */
 /***/ function(module, exports, __webpack_require__) {
 
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _react = __webpack_require__(2);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	//console.log("MessagePane B");
+	//
+	// Props channel, river
+	//
+	var MessagePane = _react2.default.createClass({
+		displayName: "MessagePane",
+
+		// ============================
+		// Accessing
+		//
+		// Use getValue for latest synchronous value
+		// Use {this.state.value} to set dependency on asychronous value
+		// ============================
+		value_: null,
+		getValue: function getValue() {
+			return this.value_;
+		},
+		setValue: function setValue(value) {
+			this.value_ = value;
+			this.setState({
+				value: value
+			});
+		},
+		// ============================
+		// React
+		// ============================
+		getInitialState: function getInitialState() {
+			return {};
+		},
+		componentWillMount: function componentWillMount() {
+			//console.log("componentWillMount")
+			this.props.inStream.onValue(function (value) {
+				this.setValue(value);
+			}.bind(this));
+			this.props.inAppendStream.onValue(function (value) {
+				var newValue = this.getValue() ? this.getValue() + "\n" + value : value;
+				this.setValue(newValue);
+			}.bind(this));
+			var initialValue = this.props.inStream.value_;
+			if (initialValue) {
+				this.setValue(initialValue);
+				this.props.outStream.push(initialValue);
+			} else {
+				this.props.outStream.push("");
+			}
+		},
+		componentDidMount: function componentDidMount() {
+			//console.log("componentDidMount", this.props.channel);
+		},
+		componentDidUpdate: function componentDidUpdate() {
+			//console.log("componentDidUpdate", this.props.channel);
+		},
+		// ============================
+		// Events
+		// ============================
+		eventTextAreaOnChange: function eventTextAreaOnChange(event) {
+			var text = event.target.value;
+			this.setValue(text);
+			this.props.outStream.push(text);
+		},
+		eventTextAreaOnKeyDown: function eventTextAreaOnKeyDown(event) {
+			this.handleKeepTabInTextArea(event);
+		},
+		// ============================
+		// Utility
+		// ============================
+		handleKeepTabInTextArea: function handleKeepTabInTextArea(event) {
+			var txa = event.target;
+			//keep tab in textarea
+			if (event.keyCode === 9) {
+				//tab
+				event.preventDefault();
+				var start = txa.selectionStart;
+				txa.value = txa.value.substring(0, txa.selectionStart) + "\t" + txa.value.substring(txa.selectionEnd);
+				txa.selectionEnd = start + 1;
+			}
+		},
+		// ============================
+		// Render
+		// ============================
+		render: function render() {
+			return _react2.default.createElement(
+				"div",
+				{ className: "MessagePane" },
+				_react2.default.createElement("textarea", { className: "border",
+					onChange: this.eventTextAreaOnChange,
+					onKeyDown: this.eventTextAreaOnKeyDown,
+					value: this.state.value })
+			);
+		}
+	});
+	//console.log("MessagePane C");
+	//console.log("MessagePane A");
+	exports.default = MessagePane;
+
+/***/ },
+/* 183 */
+/***/ function(module, exports, __webpack_require__) {
+
 	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
@@ -21797,13 +21919,11 @@
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _Todo = __webpack_require__(183);
+	var _Todo = __webpack_require__(184);
 
 	var _Todo2 = _interopRequireDefault(_Todo);
 
-	var _lodash = __webpack_require__(184);
-
-	var _makeRiver = __webpack_require__(186);
+	var _makeRiver = __webpack_require__(185);
 
 	var _makeRiver2 = _interopRequireDefault(_makeRiver);
 
@@ -21828,11 +21948,6 @@
 	            return newTodo;
 	        }
 	    }, {
-	        key: 'archiveToggleTodo',
-	        value: function archiveToggleTodo(todoId) {
-	            this.todos[todoId].isDone = !this.todos[todoId].isDone;
-	        }
-	    }, {
 	        key: 'removeTodo',
 	        value: function removeTodo(todoId) {
 	            delete this.todos[todoId];
@@ -21846,6 +21961,11 @@
 	                return _this.todos[each];
 	            });
 	        }
+	    }, {
+	        key: 'update',
+	        value: function update() {
+	            this.todoApp.update();
+	        }
 	    }]);
 
 	    return TodoDomain;
@@ -21854,7 +21974,7 @@
 	exports.default = TodoDomain;
 
 /***/ },
-/* 183 */
+/* 184 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -21882,17 +22002,22 @@
 	        this.descriptionText = descriptionText || '';
 	        this.isDone = isDone || false;
 	        this.id = id || guidGenerator();
+	        //bind this
+	        this.toggleDone = this.toggleDone.bind(this);
+	        this.remove = this.remove.bind(this);
 	    }
 
 	    _createClass(Todo, [{
 	        key: 'toggleDone',
 	        value: function toggleDone() {
 	            this.isDone = !this.isDone;
+	            this.domain.update();
 	        }
 	    }, {
 	        key: 'remove',
 	        value: function remove() {
 	            this.domain.removeTodo(this.id);
+	            this.domain.update();
 	        }
 	    }]);
 
@@ -21902,7 +22027,50 @@
 	exports.default = Todo;
 
 /***/ },
-/* 184 */
+/* 185 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _lodash = __webpack_require__(186);
+
+	var _lodash2 = _interopRequireDefault(_lodash);
+
+	var _baconjs = __webpack_require__(188);
+
+	var _baconjs2 = _interopRequireDefault(_baconjs);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	//==========================
+	function makeRiver() {
+	    return new Proxy({}, {
+	        get: function get(target, name) {
+	            if (target[name] === undefined) {
+	                var bus = new _baconjs2.default.Bus();
+	                bus.name_ = name;
+	                bus.onValue(function (value) {
+	                    bus.value_ = value;
+	                });
+	                bus.uPush = function (value) {
+	                    if (!_lodash2.default.isEqual(bus.value_, value)) {
+	                        bus.push(value);
+	                    }
+	                };
+	                target[name] = bus;
+	            }
+	            return target[name];
+	        }
+	    });
+	}
+	exports.default = makeRiver;
+
+/***/ },
+/* 186 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(global, module) {/**
@@ -38990,10 +39158,10 @@
 	  }
 	}.call(this));
 
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(185)(module)))
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(187)(module)))
 
 /***/ },
-/* 185 */
+/* 187 */
 /***/ function(module, exports) {
 
 	module.exports = function(module) {
@@ -39009,53 +39177,7 @@
 
 
 /***/ },
-/* 186 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	var _lodash = __webpack_require__(184);
-
-	var _lodash2 = _interopRequireDefault(_lodash);
-
-	var _baconjs = __webpack_require__(187);
-
-	var _baconjs2 = _interopRequireDefault(_baconjs);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	//==========================
-	function makeRiver() {
-	    return new Proxy({}, {
-	        get: function get(target, name) {
-	            if (target[name] === undefined) {
-	                var bus = new _baconjs2.default.Bus();
-	                bus.name_ = name;
-	                bus.onValue(function (value) {
-	                    bus.value_ = value;
-	                });
-	                bus.onValue(function (value) {
-	                    app.action.loopLog("stream " + name + " " + value.toString());
-	                });
-	                bus.uPush = function (value) {
-	                    if (!_lodash2.default.isEqual(bus.value_, value)) {
-	                        bus.push(value);
-	                    }
-	                };
-	                target[name] = bus;
-	            }
-	            return target[name];
-	        }
-	    });
-	}
-	exports.default = makeRiver;
-
-/***/ },
-/* 187 */
+/* 188 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(global, module) {(function() {
@@ -42438,7 +42560,7 @@
 	  return withDesc(new Bacon.Desc(this, "zip", [other]), Bacon.zipWith([this, other], f || Array));
 	};
 
-	if ("function" !== "undefined" && __webpack_require__(188) !== null && __webpack_require__(189) != null) {
+	if ("function" !== "undefined" && __webpack_require__(189) !== null && __webpack_require__(190) != null) {
 	  !(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function () {
 	    return Bacon;
 	  }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
@@ -42453,17 +42575,17 @@
 	  }
 	}).call(this);
 
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(185)(module)))
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(187)(module)))
 
 /***/ },
-/* 188 */
+/* 189 */
 /***/ function(module, exports) {
 
 	module.exports = function() { throw new Error("define cannot be used indirect"); };
 
 
 /***/ },
-/* 189 */
+/* 190 */
 /***/ function(module, exports) {
 
 	/* WEBPACK VAR INJECTION */(function(__webpack_amd_options__) {module.exports = __webpack_amd_options__;

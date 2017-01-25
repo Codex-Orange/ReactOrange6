@@ -10,9 +10,6 @@ function makeRiver() {
                 bus.onValue(function (value) {
                     bus.value_ = value
                 });
-                bus.onValue(function (value) {
-                    app.action.loopLog("stream " + name + " " + value.toString())
-                });
                 bus.uPush = function (value) {
                     if (!_.isEqual(bus.value_, value)) {
                         bus.push(value);

@@ -1,10 +1,13 @@
 import React from 'react';
 import TodoList from './TodoList';
+import MessagePane from '../lib/messagePane';
 import TodoDomain from '../lib/TodoDomain';
 const domain = new TodoDomain();
+import makeRiver from '../lib/makeRiver';
 export default class TodoApp extends React.Component {
     constructor() {
         super();
+        this.river = makeRiver();
         this.visibilityFilters = ["ALL_TODOS", "LEFT_TODOS", "COMPLETED_TODOS"];
         this.state = {
             todos: domain.getAllTodos(),
@@ -17,14 +20,17 @@ export default class TodoApp extends React.Component {
         this.setState({todos: domain.getAllTodos()});
     };
     addTodo = () => {
-        if (this._todoInputField.value) {
-            domain.addTodo(this._todoInputField.value);
+        var text = this._todoInputField.value;
+        if (text) {
+            domain.addTodo(text);
             this.update();
             this._todoInputField.value = '';
+            this.river.messageAppend.push("Add Todo " + text);
         }
     };
     changeVisibilityFilter = (e) => {
         this.setState({visibilityFilter: e.target.dataset.id});
+        this.river.messageAppend.push("Change Filter");
     };
     visibleTodos = () => {
         switch (this.state.visibilityFilter) {
@@ -44,6 +50,8 @@ export default class TodoApp extends React.Component {
         return (
             <div>
                 <h2> Down and Dirty TodoApp built with React </h2>
+                <p>Started with https://hashnode.com/post/getting-started-with-es6-and-react-by-building-a-minimal-todo-app-citaix6xe04og8y531g491a1o</p>
+                <p>Refactored, and added Bacon.js</p>
                 <input
                     type="text"
                     placeholder="What do you want todo?"
@@ -53,8 +61,6 @@ export default class TodoApp extends React.Component {
                 <TodoList
                     visibleTodos={visibleTodos}
                     visibilityFilter={this.state.visibilityFilter}
-                    archiveToggleTodo={this.archiveToggleTodo}
-                    removeTodo={this.removeTodo}
                 />
                 <div>
                     SHOW:
@@ -69,6 +75,10 @@ export default class TodoApp extends React.Component {
                                 </button>
                         )
                     }
+                </div>
+                <div className="MessagePane">
+                    <MessagePane inStream={this.river.messageWrite} inAppendStream={this.river.messageAppend}
+                                 outStream={this.river.messageRead}/>
                 </div>
 
             </div>

@@ -1,5 +1,4 @@
 import Todo from './Todo';
-import { findIndex } from 'lodash';
 import makeRiver from './makeRiver';
 export default class TodoDomain {
     constructor() {
