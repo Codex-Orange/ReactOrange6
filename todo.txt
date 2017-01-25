@@ -1,8 +1,0 @@
-JetBrains WebStorm
-
-WebStorm.Preferences.Languages & frameworks.JavaScript.JavaScript language version.JXS Harmony
-
-1.  Started with https://hashnode.com/post/getting-started-with-es6-and-react-by-building-a-minimal-todo-app-citaix6xe04og8y531g491a1o.
-2.  Cleaned it up.
-3.  Added makeRiver function.
-4.  Added domain.store
