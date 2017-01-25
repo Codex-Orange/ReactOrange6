@@ -1,0 +1,27 @@
+JetBrains WebStorm
+
+WebStorm.Preferences.Languages & frameworks.JavaScript.JavaScript language version.JXS Harmony
+
+node -v
+nvm ls
+nvm ls-remote
+npm show npm version
+npm list -g --depth=0
+
+nvm install stable
+nvm alias default v7.4.0
+npm install -g npm
+npm install -g less
+
+JetBrains WebStorm
+
+cd /Users/Stan/Dropbox/_Code/React/ReactOrange5
+
+https://hashnode.com/post/getting-started-with-es6-and-react-by-building-a-minimal-todo-app-citaix6xe04og8y531g491a1o
+
+
+had to fix:
+    TodoApp.js (this.props did not work)
+        replace
+            this.props.dataInterface
+            const todoDataInterface = new TodoDomain();
