@@ -14,15 +14,15 @@ export default class TodoDomain {
         return newTodo;
     }
 
-    archiveToggleTodo(todoId) {
-        this.todos[todoId].isDone = !this.todos[todoId].isDone
-    }
-
     removeTodo(todoId) {
         delete this.todos[todoId];
     }
 
     getAllTodos() {
         return Object.keys(this.todos).map((each) => this.todos[each]);
+    }
+
+    update() {
+        this.todoApp.update();
     }
 }

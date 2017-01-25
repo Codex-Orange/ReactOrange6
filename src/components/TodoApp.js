@@ -5,31 +5,27 @@ const domain = new TodoDomain();
 export default class TodoApp extends React.Component {
     constructor() {
         super();
-        this.visibilityFilters = ["ALL_TODOS", "LEFT_TODOS", "COMPLETED_TODOS"]
+        this.visibilityFilters = ["ALL_TODOS", "LEFT_TODOS", "COMPLETED_TODOS"];
         this.state = {
             todos: domain.getAllTodos(),
             visibilityFilter: "ALL_TODOS"
         };
+        domain.todoApp = this;
     }
 
+    update = () => {
+        this.setState({todos: domain.getAllTodos()});
+    };
     addTodo = () => {
         if (this._todoInputField.value) {
             domain.addTodo(this._todoInputField.value);
-            this.setState({todos: domain.getAllTodos()});
+            this.update();
             this._todoInputField.value = '';
         }
-    }
-    archiveToggleTodo = (e) => {
-        domain.archiveToggleTodo(e.target.dataset.id);
-        this.setState({todos: domain.getAllTodos()});
-    }
-    removeTodo = (e) => {
-        domain.removeTodo(e.target.dataset.id);
-        this.setState({todos: domain.getAllTodos()});
-    }
+    };
     changeVisibilityFilter = (e) => {
         this.setState({visibilityFilter: e.target.dataset.id});
-    }
+    };
     visibleTodos = () => {
         switch (this.state.visibilityFilter) {
             case "ALL_TODOS":
@@ -41,7 +37,7 @@ export default class TodoApp extends React.Component {
             default:
                 return this.state.todos;
         }
-    }
+    };
 
     render() {
         let visibleTodos = this.visibleTodos();

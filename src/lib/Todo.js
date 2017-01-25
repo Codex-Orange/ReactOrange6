@@ -20,9 +20,11 @@ export default class Todo {
 
     toggleDone() {
         this.isDone = !this.isDone;
+        this.domain.update();
     }
 
     remove() {
         this.domain.removeTodo(this.id);
+        this.domain.update();
     }
 }
