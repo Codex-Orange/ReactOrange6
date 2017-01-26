@@ -5,7 +5,7 @@ export default class TodoList extends React.Component {
     // "ALL_TODOS", "LEFT_TODOS", or "COMPLETED_TODOS"
     render() {
         return (
-            <div>
+            <div className="TodoList">
                 <h3>{this.props.visibilityFilter.replace("_", " ")}</h3>
                 {this.props.visibleTodos.length > 0 ?
                     (
