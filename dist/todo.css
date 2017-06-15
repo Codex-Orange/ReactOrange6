@@ -56,7 +56,7 @@ li {
 input[type=text] {
     margin: 20px;
     width: 500px;
-    height: 25px;
+    height: 50px;
     background-color: #fb0;
     padding-left: 10px;
     padding-right: 10px;
@@ -65,7 +65,7 @@ input[type=text] {
 
 input[type=checkbox] {
     margin: 5px;
-    height: 10px;
+    height: 20px;
 }
 
 label {

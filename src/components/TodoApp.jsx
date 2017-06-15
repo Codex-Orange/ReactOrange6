@@ -9,10 +9,35 @@ export default class TodoApp extends React.Component {
 		super();
 		this.visibilityFilters = ["ALL_TODOS", "LEFT_TODOS", "COMPLETED_TODOS"];
 		this.river = makeRiver();
-		this.river.visibilityFilter.push("ALL_TODOS");
+		this.river.todos.onValue(function(value) {
+			this.pushVisibleTodos();
+		}.bind(this));
+		this.river.visibilityFilter.onValue(function(value) {
+			this.pushVisibleTodos();
+		}.bind(this));
 		this.river.todos.push(domain.getAllTodos());
+		this.river.visibilityFilter.push("ALL_TODOS");
 		domain.todoApp = this;
 	}
+
+	pushVisibleTodos() {
+		//this.river.messageAppend.push("[pushVisibleTodos]");
+		var filter = this.river.visibilityFilter.value_;
+		var todos = this.river.todos.value_;
+		switch (filter) {
+			case "ALL_TODOS":
+				this.river.visibleTodos.push(todos);
+				return;
+			case "LEFT_TODOS":
+				this.river.visibleTodos.push(todos.filter(each => each.isDone === false));
+				return;
+			case "COMPLETED_TODOS":
+				this.river.visibleTodos.push(todos.filter(each => each.isDone === true));
+				return;
+			default:
+				this.river.visibleTodos.push(todos);
+		}
+	};
 
 	update = () => {
 		this.river.todos.push(domain.getAllTodos());
@@ -34,7 +59,7 @@ export default class TodoApp extends React.Component {
 	render() {
 		return (
 		  <div>
-			  <h2> Down and Dirty TodoApp built with React </h2>
+			  <h2> TodoApp built with ReactJS and Bacon.js </h2>
 			  <p>Started with
 				  https://hashnode.com/post/getting-started-with-es6-and-react-by-building-a-minimal-todo-app-citaix6xe04og8y531g491a1o </p>
 			  <p>Refactored, and added Bacon.js</p>
@@ -46,8 +71,8 @@ export default class TodoApp extends React.Component {
 			  <button onClick={this.addTodo}>Add Todo</button>
 			  <TodoList
 				className="TodoList"
-				todos={this.river.todos}
 				visibilityFilter={this.river.visibilityFilter}
+				todos={this.river.visibleTodos}
 			  />
 			  <div className="show">
 				  SHOW:
@@ -63,6 +88,7 @@ export default class TodoApp extends React.Component {
 					  )
 				  }
 			  </div>
+			  <h2> Messages </h2>
 			  <div className="MessagePane">
 				  <MessagePane inStream={this.river.messageWrite} inAppendStream={this.river.messageAppend}
 				               outStream={this.river.messageRead}/>

@@ -8,27 +8,14 @@ export default class TodoList extends TodoRoot {
 		this.connectPropStreamToState("todos");
 	}
 
-	visibleTodos() {
-		switch (this.state.visibilityFilter) {
-			case "ALL_TODOS":
-				return this.state.todos;
-			case "LEFT_TODOS":
-				return this.state.todos.filter(each => each.isDone === false);
-			case "COMPLETED_TODOS":
-				return this.state.todos.filter(each => each.isDone === true);
-			default:
-				return this.state.todos;
-		}
-	};
-
 	render() {
 		return (
 		  <div className="TodoList">
 			  <h3>{this.state.visibilityFilter.replace("_", " ")}</h3>
-			  {this.visibleTodos().length > 0 ?
+			  {this.state.todos.length > 0 ?
 				(
 				  <ul>
-					  {this.visibleTodos().map(
+					  {this.state.todos.map(
 						(each) =>
 						  <TodoItem
 							key={each.id}
