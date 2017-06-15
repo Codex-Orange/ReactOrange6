@@ -1,18 +1,15 @@
-# ReactOrange6
-To-do list using React and Bacon.js
+# accumulism/ReactOrange6
+
+To-do list using ReactJS and Bacon.js
+Why: To learn stuff.
 
 Started with https://hashnode.com/post/getting-started-with-es6-and-react-by-building-a-minimal-todo-app-citaix6xe04og8y531g491a1o.
-Cleaned it up.
 
-Added makeRiver function.
+Refactered it up quite a bit.
+Added makeRiver() function.
 Added message pane using river and streams
-
-//todo
-Convert all todo list elements to river and streams 
-??? Use a river, or two rivers, to replace action and store of flux
+Replaced some state and some events with FRP streams 
 
 
-github
 
-accumulism/ReactOrange6
                                     
