@@ -49,6 +49,10 @@ ul {
     border-radius: 5px;
 }
 
+li {
+    background-color: #fb0;
+}
+
 input[type=text] {
     margin: 20px;
     width: 500px;
@@ -57,6 +61,15 @@ input[type=text] {
     padding-left: 10px;
     padding-right: 10px;
     border-radius: 10px;
+}
+
+input[type=checkbox] {
+    margin: 5px;
+    height: 10px;
+}
+
+label {
+    font-size: 20pt;
 }
 
 .TodoList {

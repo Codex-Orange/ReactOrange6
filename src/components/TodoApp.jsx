@@ -1,23 +1,21 @@
 import React from 'react';
 import TodoList from './TodoList';
-import MessagePane from '../lib/messagePane';
+import MessagePane from '../lib/MessagePane';
 import TodoDomain from '../lib/TodoDomain';
 const domain = new TodoDomain();
 import makeRiver from '../lib/makeRiver';
 export default class TodoApp extends React.Component {
 	constructor() {
 		super();
-		this.river = makeRiver();
 		this.visibilityFilters = ["ALL_TODOS", "LEFT_TODOS", "COMPLETED_TODOS"];
-		this.state = {
-			todos: domain.getAllTodos(),
-			visibilityFilter: "ALL_TODOS"
-		};
+		this.river = makeRiver();
+		this.river.visibilityFilter.push("ALL_TODOS");
+		this.river.todos.push(domain.getAllTodos());
 		domain.todoApp = this;
 	}
 
 	update = () => {
-		this.setState({todos: domain.getAllTodos()});
+		this.river.todos.push(domain.getAllTodos());
 	};
 	addTodo = () => {
 		var text = this._todoInputField.value;
@@ -29,24 +27,11 @@ export default class TodoApp extends React.Component {
 		}
 	};
 	changeVisibilityFilter = (e) => {
-		this.setState({visibilityFilter: e.target.dataset.id});
-		this.river.messageAppend.push("Change Filter");
-	};
-	visibleTodos = () => {
-		switch (this.state.visibilityFilter) {
-			case "ALL_TODOS":
-				return this.state.todos;
-			case "LEFT_TODOS":
-				return this.state.todos.filter(each => each.isDone === false);
-			case "COMPLETED_TODOS":
-				return this.state.todos.filter(each => each.isDone === true);
-			default:
-				return this.state.todos;
-		}
+		this.river.visibilityFilter.push(e.target.dataset.id);
+		this.river.messageAppend.push("Change Filter " + e.target.dataset.id);
 	};
 
 	render() {
-		let visibleTodos = this.visibleTodos();
 		return (
 		  <div>
 			  <h2> Down and Dirty TodoApp built with React </h2>
@@ -61,8 +46,8 @@ export default class TodoApp extends React.Component {
 			  <button onClick={this.addTodo}>Add Todo</button>
 			  <TodoList
 				className="TodoList"
-				visibleTodos={visibleTodos}
-				visibilityFilter={this.state.visibilityFilter}
+				todos={this.river.todos}
+				visibilityFilter={this.river.visibilityFilter}
 			  />
 			  <div className="show">
 				  SHOW:

@@ -1,9 +1,5 @@
-//console.log("MessagePane A");
 import React from 'react';
-//console.log("MessagePane B");
-//
-// Props channel, river
-//
+
 var MessagePane = React.createClass({
 	// ============================
 	// Accessing
@@ -43,12 +39,6 @@ var MessagePane = React.createClass({
 		} else {
 			this.props.outStream.push("");
 		}
-	},
-	componentDidMount: function () {
-		//console.log("componentDidMount", this.props.channel);
-	},
-	componentDidUpdate: function () {
-		//console.log("componentDidUpdate", this.props.channel);
 	},
 	// ============================
 	// Events
@@ -90,5 +80,4 @@ var MessagePane = React.createClass({
 		);
 	}
 });
-//console.log("MessagePane C");
 export default MessagePane
